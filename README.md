@@ -8,7 +8,7 @@ We compare the following three different open-source black-box optimization libr
 * gp_minimize from skopt
 * rbfopt
 
-The discrete-event simulation model calculates inventory profile (along with associated inventory parameters such as on-hand, inventory position, service level, etc.) across time.  We assume that the system follows a base stock policy with a reorder point.  If inventory position <= ROP, an order of the amount (base stock level - current inventory level) is placed by the facility.  Essentially it's equivalent to filling up the tank.
+The discrete-event simulation model calculates inventory profile (along with associated inventory parameters such as on-hand, inventory position, service level, etc.) across time.  We assume that the system follows a base stock policy with a reorder point.  If inventory position <= ROP, an order of the amount (base stock level - current inventory level) is placed by the facility.  Essentially it's equivalent to filling up the tank.  For the optimization model, both base stock level and reorder point are decision variables for each stocking facility.
 
 The two discrete-event simualtion modules differ in the following way:
 
