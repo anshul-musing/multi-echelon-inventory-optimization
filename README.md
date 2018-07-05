@@ -1,6 +1,6 @@
 # multi-echelon-inventory-optimization
 
-The modules in this repository optimize inventory for a multi-echelon supply chain network.  We follow a simulation optimization approach where the multi-echelon system is simulated using a SimPy-based discrete-event simulation.  The optimization routine follows a black box approach.  It minimizes average on-hand inventory for all stocking facilities while ensuring the desired fill rate ($\beta$ service level) is met for locations serving customers. It calls the simulation model to determine current average on-hand inventory and service level.
+The modules in this repository optimize inventory for a multi-echelon supply chain network.  We follow a simulation optimization approach where the multi-echelon system is simulated using a SimPy-based discrete-event simulation.  The optimization routine follows a black box approach.  It minimizes average on-hand inventory for all stocking facilities while ensuring the desired fill rate (_&beta;_ service level) is met for locations serving customers. It calls the simulation model to determine current average on-hand inventory and service level.
 
 We compare the following three different open-source black-box optimization libraries.  Source code is provided for all three separately:
 
