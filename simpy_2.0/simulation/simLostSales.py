@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-__author__ = 'Anshul Agarwal'
 
 """This module simulates a multi-echelon supply chain
 and calculates inventory profile (along with associated inventory 
@@ -29,6 +26,9 @@ a manufacturing plant or a vendor for which we do not
 track inventory, i.e., it operates at 100% service level
 
 """
+
+__author__ = 'Anshul Agarwal'
+
 
 from SimPy.Simulation import *
 import numpy as np
