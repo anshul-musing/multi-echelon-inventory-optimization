@@ -27,4 +27,22 @@ The two discrete-event simualtion modules differ in the following way:
 
 One of the key features is that we do not assume any pre-defined distribution for demand and lead time.  We follow a data-driven distribution.  In other words, we bootstrap sample from the historical data in order to simulate variability in both demand and lead time.  However, this inherently assumes that there is no time correlation in historical demand and lead time, as well as the future will be similar to history.
 
+The discrete-event simulation model stands on four different processes:
+1) Place replenishment order: 
+    Process used by stocking locations to place replenishment
+    order to upstream facilities once inventory levels reach 
+    below reorder point
+2) Fulfill replenishment order:
+    Process used by a facility to prepare and ship the
+    replenishment ordered by its downstream facility.  Once
+    the order is prepared, it fires a delivery process
+3) Deliver replenishment:
+    Process invoked by fulfill order.  Each replenishment 
+    delivery is handled by this process.  It delivers the
+    replenishment after lead time, thus increasing downstream
+    facility's on hand inventory
+4) Customer demand:
+    Basic process to deliver customer demand from each of the
+    serving locations
+
 Assumption:  The first node is the supply node such as a manufacturing plant or a vendor for which we do not track inventory, i.e., it operates at 100% service level
