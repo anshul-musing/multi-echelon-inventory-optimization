@@ -81,7 +81,8 @@ def getObj(initial_guess, args):
         totServiceLevel = np.array([totServiceLevel[j] + \
                                     nodes[j].serviceLevel for j in range(len(nodes))]) #convert list to array
 		
-    totAvgOnHand += np.sum([nodes[j].avgOnHand for j in range(len(nodes))])
+        totAvgOnHand += np.sum([nodes[j].avgOnHand for j in range(len(nodes))])
+    
     servLevelPenalty = np.maximum(0, serviceTarget - totServiceLevel/replications) # element-wise max
     objFunValue = totAvgOnHand/replications + 1.0e6*np.sum(servLevelPenalty)
     return objFunValue
@@ -110,7 +111,7 @@ optROP = scipy.optimize.minimize(fun=getObj \
 							, args=additionalArgs \
 							, method='Nelder-Mead' \
 							, callback=callbackF \
-							, options={'disp': True,'iprint': 99,'maxiter':2000})
+							, options={'disp': True,'iprint': 99,'maxiter':1500})
 
 print optROP.x
 

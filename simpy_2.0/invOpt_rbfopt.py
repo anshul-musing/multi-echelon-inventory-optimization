@@ -75,7 +75,8 @@ def getObj(initial_guess):
         totServiceLevel = np.array([totServiceLevel[j] + 
                                     nodes[j].serviceLevel for j in range(len(nodes))]) #convert list to array
     	
-    totAvgOnHand += np.sum([nodes[j].avgOnHand for j in range(len(nodes))])
+        totAvgOnHand += np.sum([nodes[j].avgOnHand for j in range(len(nodes))])
+    
     servLevelPenalty = np.maximum(0, serviceTarget - totServiceLevel/replications) # element-wise max
     objFunValue = totAvgOnHand/replications + 1.0e6*np.sum(servLevelPenalty)
     return objFunValue
@@ -88,7 +89,7 @@ ROP_initial_guess = [1000, 250, 200, 150, 200]
 guess = base_stock_initial_guess + ROP_initial_guess # concatenate lists
 numVars = len(guess)
 
-settings = rbfopt.RbfoptSettings(max_evaluations=1000,
+settings = rbfopt.RbfoptSettings(max_evaluations=500,
 								minlp_solver_path="path/to/bonmin.exe",
 								nlp_solver_path="path/to/ipopt.exe")
 
