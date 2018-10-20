@@ -90,11 +90,11 @@ guess = base_stock_initial_guess + ROP_initial_guess # concatenate lists
 numVars = len(guess)
 
 settings = rbfopt.RbfoptSettings(max_evaluations=500,
-								minlp_solver_path="path/to/bonmin.exe",
-								nlp_solver_path="path/to/ipopt.exe")
+								minlp_solver_path="C:/Anaconda3/rbfopt_solvers/bonmin-win64/bonmin.exe",
+								nlp_solver_path="C:/Anaconda3/rbfopt_solvers/ipopt-win64/ipopt.exe")
 
 bb = rbfopt.RbfoptUserBlackBox(numVars, np.array([0] * numVars), np.array(guess),
                                np.array(['R'] * numVars), getObj)
 alg = rbfopt.RbfoptAlgorithm(settings, bb)
 val, x, itercount, evalcount, fast_evalcount = alg.optimize()
-print val, x, itercount, evalcount, fast_evalcount
+print(val, x, itercount, evalcount, fast_evalcount)

@@ -79,7 +79,7 @@ def getObj(initial_guess):
     
     servLevelPenalty = np.maximum(0, serviceTarget - totServiceLevel/replications) # element-wise max
     objFunValue = totAvgOnHand/replications + 1.0e6*np.sum(servLevelPenalty)
-    print objFunValue
+    print(objFunValue)
     return objFunValue
 
 
@@ -96,4 +96,4 @@ for j in range(len(guess_vec)):
 
 
 optROP = gp_minimize(getObj, guess, acq_func="EI")
-print optROP.x
+print(optROP.x)

@@ -90,7 +90,7 @@ def getObj(initial_guess, args):
 
 # Callback function to print optimization iterations
 def callbackF(current_solution):
-	print current_solution
+	print(current_solution)
 
 
 ######## Main statements to call optimization ########
@@ -113,5 +113,5 @@ optROP = scipy.optimize.minimize(fun=getObj \
 							, callback=callbackF \
 							, options={'disp': True,'iprint': 99,'maxiter':1500})
 
-print optROP.x
+print(optROP.x)
 
