@@ -9,8 +9,9 @@ __author__ = 'Anshul Agarwal'
 #from simulation.simLostSales import simulate_network
 from simulation.simBackorder import simulate_network
 import numpy as np
-from skopt import gp_minimize
+from skopt import gp_minimize, forest_minimize
 import csv
+import time
 
 
 # Read the historical demand data
@@ -79,21 +80,60 @@ def getObj(initial_guess):
     
     servLevelPenalty = np.maximum(0, serviceTarget - totServiceLevel/replications) # element-wise max
     objFunValue = totAvgOnHand/replications + 1.0e6*np.sum(servLevelPenalty)
-    print(objFunValue)
     return objFunValue
 
 
-######## Main statements to call optimization ########
+# Callback function to print optimization iterations
+niter = 1
+def callbackF(res):
+    global niter
+    print('{0:4d}    {1:6.6f}'.format(niter, res.fun))
+    niter += 1
 
+######## Main statements to call optimization ########
 base_stock_initial_guess = [3000, 600, 900, 300, 600]
 ROP_initial_guess = [1000, 250, 200, 150, 200]
 guess_vec = base_stock_initial_guess + ROP_initial_guess # concatenate lists
 
-guess = []
-for j in range(len(guess_vec)):
-    g = (0, guess_vec[j])
-    guess.append(g)
+NUM_CYCLES = 2
+TIME_LIMIT = 300 # seconds
+start_time = time.time()
+print("\nMax time limit: " + str(TIME_LIMIT/60) + " minutes")
+print("Max algorithm cycles: " + str(NUM_CYCLES))
+print("The algorithm will run either for " + str(TIME_LIMIT/60) + " minutes or " + str(NUM_CYCLES) + " cycles")
+ctr = 1
+elapsed_time = time.time() - start_time
+while ctr <= NUM_CYCLES and elapsed_time <= TIME_LIMIT:
+    print('\nCycle: ' + str(ctr))
+    print('{0:4s}    {1:9s}'.format('Iter', 'Obj'))
 
+    guess = []
+    for j in range(len(guess_vec)):
+        g = (0, guess_vec[j])
+        guess.append(g)
+    """
+    opt = forest_minimize(func=getObj
+                        , dimensions=guess
+                        , n_calls=20
+                        , n_random_starts=10
+                        , random_state=707
+                        , verbose=False
+                        , callback=callbackF
+                        , kappa=50)
+    """
+    opt = gp_minimize(func=getObj
+                        , dimensions=guess
+                        , n_calls=20
+                        , n_random_starts=10
+                        , random_state=707
+                        , verbose=False
+                        , callback=callbackF
+                        , kappa=50)
 
-optROP = gp_minimize(getObj, guess, acq_func="EI")
-print(optROP.x)
+    guess_vec = opt.x
+    ctr += 1
+    elapsed_time = time.time() - start_time
+
+print("\nFinal objective: " + str(opt.fun))
+print("\nFinal solution: " + str(opt.x))
+print("\nTotal time: " + "{0:3.2f}".format(elapsed_time) + " seconds")

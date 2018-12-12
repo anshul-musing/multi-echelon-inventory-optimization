@@ -11,6 +11,7 @@ from simulation.simBackorder import simulate_network
 import numpy as np
 import scipy.optimize
 import csv
+import time
 
 
 # Read the historical demand data
@@ -45,6 +46,14 @@ nodeNetwork[3, 5] = 1
 defaultLeadTime = np.array([0, 3, 4, 4, 2, 2])
 serviceTarget = np.array([0.0, 0.95, 0.95, 0.0, 0.95, 0.95])
 
+# Combine all datasets
+allData = {'dd': demandAllNodes,\
+            'lt': leadTimeDelay,\
+            'n': numNodes,\
+            'net': nodeNetwork,\
+            'dlt': defaultLeadTime,\
+            'sl': serviceTarget
+        }
 
 # function to evaluate the objective function for optimization
 # we minimize on-hand inventory and heavily penalize not meeting
@@ -75,10 +84,10 @@ def getObj(initial_guess, args):
     totServiceLevel = np.zeros(numNodes)
     totAvgOnHand = 0.0
     for i in range(replications):
-        nodes = simulate_network(i,numNodes,nodeNetwork,initialInv,ROP,baseStock,\
+        nodes = simulate_network(i,numNodes,nodeNetwork,initialInv,ROP,baseStock,
                                  demandAllNodes,defaultLeadTime,leadTimeDelay)
 		
-        totServiceLevel = np.array([totServiceLevel[j] + \
+        totServiceLevel = np.array([totServiceLevel[j] + 
                                     nodes[j].serviceLevel for j in range(len(nodes))]) #convert list to array
 		
         totAvgOnHand += np.sum([nodes[j].avgOnHand for j in range(len(nodes))])
@@ -89,29 +98,39 @@ def getObj(initial_guess, args):
 
 
 # Callback function to print optimization iterations
-def callbackF(current_solution):
-	print(current_solution)
+niter = 1
+def callbackF(xk):
+    global niter
+    print('{0:4d}    {1:6.6f}'.format(niter, getObj(xk, allData)))
+    niter += 1
 
 
 ######## Main statements to call optimization ########
-additionalArgs = {'dd': demandAllNodes,\
-				'lt': leadTimeDelay,\
-				'n': numNodes,\
-				'net': nodeNetwork,\
-				'dlt': defaultLeadTime,\
-				'sl': serviceTarget
-				}
-
 base_stock_initial_guess = [3000, 600, 900, 300, 600]
 ROP_initial_guess = [1000, 250, 200, 150, 200]
 guess = base_stock_initial_guess + ROP_initial_guess # concatenate lists
 
-optROP = scipy.optimize.minimize(fun=getObj \
-							, x0=guess \
-							, args=additionalArgs \
-							, method='Nelder-Mead' \
-							, callback=callbackF \
-							, options={'disp': True,'iprint': 99,'maxiter':1500})
+NUM_CYCLES = 1
+TIME_LIMIT = 300 # seconds
+start_time = time.time()
+print("\nMax time limit: " + str(TIME_LIMIT/60) + " minutes")
+print("Max algorithm cycles: " + str(NUM_CYCLES))
+print("The algorithm will run either for " + str(TIME_LIMIT/60) + " minutes or " + str(NUM_CYCLES) + " cycles")
+ctr = 1
+elapsed_time = time.time() - start_time
+while ctr <= NUM_CYCLES and elapsed_time <= TIME_LIMIT:
+    print('\nCycle: ' + str(ctr))
+    print('{0:4s}    {1:9s}'.format('Iter', 'Obj'))
+    optROP = scipy.optimize.minimize(fun=getObj
+    							, x0=guess
+    							, args=allData
+    							, method='Nelder-Mead'
+    							, callback=callbackF
+    							, options={'disp': True,'maxiter':10})
+    guess = optROP.x
+    ctr += 1
+    elapsed_time = time.time() - start_time
 
-print(optROP.x)
-
+print("\nFinal objective: " + str(getObj(optROP.x, allData)))
+print("\nFinal solution: " + str(optROP.x))
+print("\nTotal time: " + "{0:3.2f}".format(elapsed_time) + " seconds")

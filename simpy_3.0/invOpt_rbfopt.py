@@ -11,6 +11,7 @@ from simulation.simBackorder import simulate_network
 import numpy as np
 import rbfopt
 import csv
+import time
 
 
 # Read the historical demand data
@@ -83,18 +84,35 @@ def getObj(initial_guess):
 
 
 ######## Main statements to call optimization ########
-
 base_stock_initial_guess = [3000, 600, 900, 300, 600]
 ROP_initial_guess = [1000, 250, 200, 150, 200]
 guess = base_stock_initial_guess + ROP_initial_guess # concatenate lists
 numVars = len(guess)
 
-settings = rbfopt.RbfoptSettings(max_evaluations=500,
-								minlp_solver_path="C:/Anaconda3/rbfopt_solvers/bonmin-win64/bonmin.exe",
-								nlp_solver_path="C:/Anaconda3/rbfopt_solvers/ipopt-win64/ipopt.exe")
+settings = rbfopt.RbfoptSettings(max_evaluations=100,
+                                global_search_method='solver',
+                                rand_seed=707,
+								minlp_solver_path="/Users/vasudha/anaconda3/rbfopt_solvers/bonmin-osx/bonmin",
+								nlp_solver_path="/Users/vasudha/anaconda3/rbfopt_solvers/ipopt-osx/ipopt")
 
-bb = rbfopt.RbfoptUserBlackBox(numVars, np.array([0] * numVars), np.array(guess),
-                               np.array(['R'] * numVars), getObj)
-alg = rbfopt.RbfoptAlgorithm(settings, bb)
-val, x, itercount, evalcount, fast_evalcount = alg.optimize()
-print(val, x, itercount, evalcount, fast_evalcount)
+NUM_CYCLES = 2
+TIME_LIMIT = 300 # seconds
+start_time = time.time()
+print("\nMax time limit: " + str(TIME_LIMIT/60) + " minutes")
+print("Max algorithm cycles: " + str(NUM_CYCLES))
+print("The algorithm will run either for " + str(TIME_LIMIT/60) + " minutes or " + str(NUM_CYCLES) + " cycles")
+ctr = 1
+elapsed_time = time.time() - start_time
+while ctr <= NUM_CYCLES and elapsed_time <= TIME_LIMIT:
+    print('\nCycle: ' + str(ctr))
+    bb = rbfopt.RbfoptUserBlackBox(numVars, np.array([0] * numVars), np.array(guess),
+                                   np.array(['R'] * numVars), getObj)
+    alg = rbfopt.RbfoptAlgorithm(settings, bb)
+    val, x, itercount, evalcount, fast_evalcount = alg.optimize()
+    guess = x
+    ctr += 1
+    elapsed_time = time.time() - start_time
+
+print("\nFinal objective: " + str(val))
+print("\nFinal solution: " + str(x))
+print("\nTotal time: " + "{0:3.2f}".format(elapsed_time) + " seconds")
