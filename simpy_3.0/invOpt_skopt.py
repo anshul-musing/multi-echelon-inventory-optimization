@@ -6,8 +6,8 @@ as a black box function to optimize inventory policy
 __author__ = 'Anshul Agarwal'
 
 
-#from simulation.simLostSales import simulate_network
-from simulation.simBackorder import simulate_network
+from simulation.simLostSales import simulate_network
+#from simulation.simBackorder import simulate_network
 import numpy as np
 from skopt import gp_minimize, forest_minimize
 import csv
@@ -54,8 +54,9 @@ serviceTarget = np.array([0.0, 0.95, 0.95, 0.0, 0.95, 0.95])
 def getObj(initial_guess):
 
 	# Split the initial guess to get base stock and ROP
-    base_stock_guess = initial_guess[:(numNodes - 1)]
+    excess_inventory_guess = initial_guess[:(numNodes - 1)]
     ROP_guess = initial_guess[(numNodes - 1):]
+    base_stock_guess = np.add(excess_inventory_guess, ROP_guess)
     
     # Insert the supply node's base stock
     baseStock = np.insert(base_stock_guess, 0, 10000)
@@ -91,26 +92,28 @@ def callbackF(res):
     niter += 1
 
 ######## Main statements to call optimization ########
-base_stock_initial_guess = [3000, 600, 900, 300, 600]
+excess_inventory_initial_guess = [2000, 350, 700, 150, 400]
 ROP_initial_guess = [1000, 250, 200, 150, 200]
-guess_vec = base_stock_initial_guess + ROP_initial_guess # concatenate lists
+guess_vec = excess_inventory_initial_guess + ROP_initial_guess # concatenate lists
+guess = []
+for j in range(len(guess_vec)):
+    g = (0, guess_vec[j])
+    guess.append(g)
 
-NUM_CYCLES = 2
-TIME_LIMIT = 300 # seconds
+NUM_CYCLES = 1000
+TIME_LIMIT = 1440 # minutes
 start_time = time.time()
-print("\nMax time limit: " + str(TIME_LIMIT/60) + " minutes")
-print("Max algorithm cycles: " + str(NUM_CYCLES))
-print("The algorithm will run either for " + str(TIME_LIMIT/60) + " minutes or " + str(NUM_CYCLES) + " cycles")
+print("\nMax time limit: " + str(TIME_LIMIT) + " minutes")
+print("Max algorithm cycles: " + str(NUM_CYCLES) + " (20 iterations per cycle)")
+print("The algorithm will run either for " + str(TIME_LIMIT) + " minutes or " + str(NUM_CYCLES) + " cycles")
 ctr = 1
-elapsed_time = time.time() - start_time
+elapsed_time = (time.time() - start_time)/60.0
+bestObj = 1e7
+bestSoln = []
+bestCycle = 0
 while ctr <= NUM_CYCLES and elapsed_time <= TIME_LIMIT:
     print('\nCycle: ' + str(ctr))
     print('{0:4s}    {1:9s}'.format('Iter', 'Obj'))
-
-    guess = []
-    for j in range(len(guess_vec)):
-        g = (0, guess_vec[j])
-        guess.append(g)
     """
     opt = forest_minimize(func=getObj
                         , dimensions=guess
@@ -125,15 +128,35 @@ while ctr <= NUM_CYCLES and elapsed_time <= TIME_LIMIT:
                         , dimensions=guess
                         , n_calls=20
                         , n_random_starts=10
-                        , random_state=707
+                        , random_state=ctr
                         , verbose=False
                         , callback=callbackF
                         , kappa=50)
 
-    guess_vec = opt.x
+    if opt.fun < bestObj:
+        bestObj = opt.fun
+        bestSoln = opt.x
+        bestCycle = ctr
     ctr += 1
-    elapsed_time = time.time() - start_time
+    elapsed_time = (time.time() - start_time)/60.0
 
-print("\nFinal objective: " + str(opt.fun))
-print("\nFinal solution: " + str(opt.x))
-print("\nTotal time: " + "{0:3.2f}".format(elapsed_time) + " seconds")
+print("\nFinal objective: " + "{0:10.3f}".format(bestObj))
+print("\nFinal solution: " + str(bestSoln))
+print("\nBest cycle: " + str(bestCycle))
+print("\nTotal time: " + "{0:3.2f}".format(elapsed_time) + " minutes")
+
+"""
+Backorder case
+
+Final objective:   1516.884
+Final solution: [1325, 196, 346, 99, 149, 709, 187, 181, 91, 188]
+Best cycle: 192
+Total time: 399.42 minutes
+
+Lost sales case
+
+Final objective:   1277.106
+Final solution: [1122, 57, 235, 18, 8, 732, 195, 189, 106, 182]
+Best cycle: 228
+Total time: 387.40 minutes
+"""

@@ -6,8 +6,8 @@ as a black box function to optimize inventory policy
 __author__ = 'Anshul Agarwal'
 
 
-#from simulation.simLostSales import simulate_network
-from simulation.simBackorder import simulate_network
+from simulation.simLostSales import simulate_network
+#from simulation.simBackorder import simulate_network
 import numpy as np
 import rbfopt
 import csv
@@ -54,8 +54,9 @@ serviceTarget = np.array([0.0, 0.95, 0.95, 0.0, 0.95, 0.95])
 def getObj(initial_guess):
     
     # Split the initial guess to get base stock and ROP
-    base_stock_guess = initial_guess[:(numNodes - 1)]
+    excess_inventory_guess = initial_guess[:(numNodes - 1)]
     ROP_guess = initial_guess[(numNodes - 1):]
+    base_stock_guess = np.add(excess_inventory_guess, ROP_guess)
     
     # Insert the supply node's base stock
     baseStock = np.insert(base_stock_guess, 0, 10000)
@@ -84,35 +85,36 @@ def getObj(initial_guess):
 
 
 ######## Main statements to call optimization ########
-base_stock_initial_guess = [3000, 600, 900, 300, 600]
+excess_inventory_initial_guess = [2000, 350, 700, 150, 400]
 ROP_initial_guess = [1000, 250, 200, 150, 200]
-guess = base_stock_initial_guess + ROP_initial_guess # concatenate lists
+guess = excess_inventory_initial_guess + ROP_initial_guess # concatenate lists
 numVars = len(guess)
 
-settings = rbfopt.RbfoptSettings(max_evaluations=100,
+settings = rbfopt.RbfoptSettings(max_evaluations=5000,
                                 global_search_method='solver',
                                 rand_seed=707,
-								minlp_solver_path="/Users/vasudha/anaconda3/rbfopt_solvers/bonmin-osx/bonmin",
-								nlp_solver_path="/Users/vasudha/anaconda3/rbfopt_solvers/ipopt-osx/ipopt")
+								minlp_solver_path="/path/to/bonmin",
+								nlp_solver_path="/path/to/ipopt")
 
-NUM_CYCLES = 2
-TIME_LIMIT = 300 # seconds
 start_time = time.time()
-print("\nMax time limit: " + str(TIME_LIMIT/60) + " minutes")
-print("Max algorithm cycles: " + str(NUM_CYCLES))
-print("The algorithm will run either for " + str(TIME_LIMIT/60) + " minutes or " + str(NUM_CYCLES) + " cycles")
-ctr = 1
-elapsed_time = time.time() - start_time
-while ctr <= NUM_CYCLES and elapsed_time <= TIME_LIMIT:
-    print('\nCycle: ' + str(ctr))
-    bb = rbfopt.RbfoptUserBlackBox(numVars, np.array([0] * numVars), np.array(guess),
-                                   np.array(['R'] * numVars), getObj)
-    alg = rbfopt.RbfoptAlgorithm(settings, bb)
-    val, x, itercount, evalcount, fast_evalcount = alg.optimize()
-    guess = x
-    ctr += 1
-    elapsed_time = time.time() - start_time
+bb = rbfopt.RbfoptUserBlackBox(numVars, np.array([0] * numVars), np.array(guess),
+                               np.array(['R'] * numVars), getObj)
+alg = rbfopt.RbfoptAlgorithm(settings, bb)
+val, x, itercount, evalcount, fast_evalcount = alg.optimize()
+elapsed_time = (time.time() - start_time)/60.0
 
-print("\nFinal objective: " + str(val))
+print("\nFinal objective: " + "{0:10.3f}".format(val))
 print("\nFinal solution: " + str(x))
-print("\nTotal time: " + "{0:3.2f}".format(elapsed_time) + " seconds")
+print("\nTotal time: " + "{0:3.2f}".format(elapsed_time) + " minutes")
+
+"""
+Backorder case 
+
+Final objective:    950.642
+Final solution: [3.73352342e-01, 5.76883222e+01, 2.29893706e+02, 9.73294467e+01, 4.63031579e+01, 
+8.34464787e+02, 1.96369932e+02, 1.87766439e+02, 8.35991661e+01, 2.00000000e+02]
+Total time: 5048.39 seconds
+
+Lost sales case
+
+"""
