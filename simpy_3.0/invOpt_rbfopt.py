@@ -117,4 +117,8 @@ Total time: 5048.39 seconds
 
 Lost sales case
 
+Final objective:   1145.803
+Final solution: [8.27825917e+02, 6.64267881e+01, 3.15525949e+02, 4.63218585e-02, 5.85635897e+01, 
+7.21927771e+02, 2.14184451e+02, 1.35273516e+02, 9.91709664e+01, 2.00000000e+02]
+Total time: 116.97 minutes
 """
