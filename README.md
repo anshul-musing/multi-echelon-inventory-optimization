@@ -47,6 +47,8 @@ The discrete-event simulation model stands on four different processes:
 
 Assumption:  The first node is the supply node such as a manufacturing plant or a vendor for which we do not track inventory, i.e., it operates at 100% service level
 
-Our experiments demonstrate practical applicability of our approach. While we observe substantially lower inventory levels and computationally superior results from RBFOpt, depending on the problem, search strategy, and the random start states, close enough good solution can be obtained from both RBFOpt and Scikit-Optimize. The optimization results demonstrate a preference for a centralized inventory planning scheme that help with risk pooling. Moreover, with no order placement cost, the optimal solution tends to order more frequently in order to lower inventory.  The work is published [here]
+Our experiments demonstrate practical applicability of our approach. While we observe substantially lower inventory levels and computationally superior results from RBFOpt, depending on the problem, search strategy, and the random start states, close enough good solution can be obtained from both RBFOpt and Scikit-Optimize. The optimization results demonstrate a preference for a centralized inventory planning scheme that help with risk pooling. Moreover, with no order placement cost, the optimal solution tends to order more frequently in order to lower inventory.  
+
+The work is published [here]
 
 [here]: https://arxiv.org/abs/1901.00090
